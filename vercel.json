@@ -1,11 +1,27 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" }
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "status": 200, "dest": "/index.html" }
-  ],
-  "public": true
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/service-worker.js",
+      "dest": "/public/service-worker.js"
+    },
+    {
+      "src": "/(.*\\..+)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/(?!api)(.*)",
+      "dest": "/public/index.html"
+    }
+  ]
 }
