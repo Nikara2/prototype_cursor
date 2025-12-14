@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📋 Scanner de Cartes d'Assurance - PWA
 
 Prototype d'application Progressive Web App (PWA) pour scanner et extraire automatiquement les informations des cartes d'assurance santé à l'aide de l'OCR.
@@ -246,3 +247,6 @@ MIT
 
 Prototype développé pour démonstration des fonctionnalités PWA et OCR.
 
+=======
+# prototype_cursor
+ c87a9638d64017f30b45c3e3653dd4156fe5f14f
