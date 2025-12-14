@@ -1,0 +1,24 @@
+{
+  "name": "carte-assurance-scanner",
+  "version": "1.0.0",
+  "description": "PWA pour scanner et extraire les informations des cartes d'assurance santé",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "kill-port": "node scripts/kill-port.js"
+  },
+  "keywords": ["pwa", "ocr", "assurance", "scanner"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
+

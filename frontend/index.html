@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Scanner de cartes d'assurance santé avec OCR">
+    <meta name="theme-color" content="#4A90E2">
+    <title>Scanner Carte Assurance</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Scanner Carte d'Assurance</h1>
+            <p class="subtitle">Scannez et enregistrez les informations de la carte d'assurance santé</p>
+        </header>
+
+        <main>
+            <!-- Section Scanner -->
+            <section id="scanner-section" class="card">
+                <h2>Scanner la carte</h2>
+                
+                <div id="camera-container" class="camera-container hidden">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" class="hidden"></canvas>
+                    <div class="camera-controls">
+                        <button id="capture-btn" class="btn btn-primary">📷 Capturer</button>
+                        <button id="cancel-camera-btn" class="btn btn-secondary">Annuler</button>
+                    </div>
+                </div>
+
+                <div id="preview-container" class="preview-container hidden">
+                    <img id="preview-image" alt="Aperçu de la carte">
+                    <div class="preview-controls">
+                        <button id="retake-btn" class="btn btn-secondary">Reprendre</button>
+                        <button id="process-btn" class="btn btn-primary">🔍 Analyser avec OCR</button>
+                    </div>
+                </div>
+
+                <div id="initial-controls">
+                    <button id="scan-btn" class="btn btn-primary btn-large">
+                        📸 Scanner la carte
+                    </button>
+                </div>
+
+                <!-- Résultat OCR -->
+                <div id="ocr-result" class="ocr-result hidden">
+                    <h3>Informations extraites :</h3>
+                    <div id="ocr-loading" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>Analyse en cours...</p>
+                    </div>
+                    <form id="carte-form" class="carte-form hidden">
+                        <div class="form-group">
+                            <label for="nom">Nom *</label>
+                            <input type="text" id="nom" name="nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prenom">Prénom *</label>
+                            <input type="text" id="prenom" name="prenom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="numero-assurance">Numéro d'assurance *</label>
+                            <input type="text" id="numero-assurance" name="numeroAssurance" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="assureur">Assureur *</label>
+                            <input type="text" id="assureur" name="assureur" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">💾 Enregistrer</button>
+                            <button type="button" id="reset-btn" class="btn btn-secondary">Nouveau scan</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Section Liste des cartes -->
+            <section id="cartes-section" class="card">
+                <h2>Cartes enregistrées</h2>
+                <button id="refresh-btn" class="btn btn-secondary">🔄 Actualiser</button>
+                <div id="cartes-list" class="cartes-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Chargement...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Prototype PWA - Scanner de cartes d'assurance</p>
+        </footer>
+    </div>
+
+    <!-- Messages de notification -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+    <script src="app.js"></script>
+    <script src="service-worker.js"></script>
+</body>
+</html>
+
