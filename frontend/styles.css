@@ -210,6 +210,33 @@ main {
     padding: 15px;
     margin-bottom: 15px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    gap: 15px;
+}
+
+.carte-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.carte-item-image {
+    flex-shrink: 0;
+    width: 120px;
+    height: 120px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: white;
+    border: 1px solid var(--border-color);
+}
+
+.carte-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carte-item-content {
+    flex: 1;
 }
 
 .carte-item:hover {

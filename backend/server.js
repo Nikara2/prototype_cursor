@@ -63,6 +63,10 @@ const carteSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  imageBase64: {
+    type: String,
+    default: null
+  },
   dateEnregistrement: {
     type: Date,
     default: Date.now
@@ -88,7 +92,7 @@ const Carte = mongoose.model('Carte', carteSchema);
 app.post('/api/cartes', async (req, res) => {
   try {
     // Validation basique des données
-    const { nom, prenom, numeroAssurance, assureur } = req.body;
+    const { nom, prenom, numeroAssurance, assureur, imageBase64 } = req.body;
 
     if (!nom || !prenom || !numeroAssurance || !assureur) {
       return res.status(400).json({
@@ -101,7 +105,8 @@ app.post('/api/cartes', async (req, res) => {
       nom,
       prenom,
       numeroAssurance,
-      assureur
+      assureur,
+      imageBase64: imageBase64 || null
     });
 
     const carteEnregistree = await nouvelleCarte.save();
@@ -120,19 +125,36 @@ app.post('/api/cartes', async (req, res) => {
 
 /**
  * GET /api/cartes
- * Récupère toutes les cartes enregistrées
+ * Récupère toutes les cartes enregistrées (sans les images pour performance)
  * 
  * Retourne un tableau de toutes les cartes, triées par date d'enregistrement (plus récentes en premier)
  */
 app.get('/api/cartes', async (req, res) => {
   try {
-    const cartes = await Carte.find().sort({ dateEnregistrement: -1 });
+    const cartes = await Carte.find().sort({ dateEnregistrement: -1 }).select('-imageBase64');
     res.json(cartes);
   } catch (error) {
     console.error('Erreur lors de la récupération:', error);
     res.status(500).json({
       error: 'Erreur serveur lors de la récupération des cartes'
     });
+  }
+});
+
+/**
+ * GET /api/cartes/:id/image
+ * Récupère l'image Base64 d'une carte spécifique
+ */
+app.get('/api/cartes/:id/image', async (req, res) => {
+  try {
+    const carte = await Carte.findById(req.params.id).select('imageBase64');
+    if (!carte || !carte.imageBase64) {
+      return res.status(404).json({ error: 'Image non trouvée' });
+    }
+    res.json({ imageBase64: carte.imageBase64 });
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'image:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
