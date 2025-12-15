@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 📋 Scanner de Cartes d'Assurance - PWA
 
 Prototype d'application Progressive Web App (PWA) pour scanner et extraire automatiquement les informations des cartes d'assurance santé à l'aide de l'OCR.
@@ -26,13 +25,15 @@ Prototype d'application Progressive Web App (PWA) pour scanner et extraire autom
 prototype_cursor/
 ├── backend/
 │   ├── server.js          # Serveur Express
-│   └── .env.example       # Exemple de configuration
+│   └── config.example.js  # Exemple de configuration
 ├── frontend/
 │   ├── index.html         # Page principale
 │   ├── styles.css         # Styles CSS
 │   ├── app.js             # Logique JavaScript
 │   ├── service-worker.js  # Service Worker PWA
 │   └── manifest.json      # Manifest PWA
+├── vercel.json            # Configuration Vercel
+├── .vercelignore          # Fichiers ignorés par Vercel
 ├── package.json           # Dépendances Node.js
 └── README.md              # Ce fichier
 ```
@@ -85,6 +86,122 @@ prototype_cursor/
    - Ouvrir votre navigateur : `http://localhost:3000`
    - Sur mobile : utiliser l'IP de votre machine (ex: `http://192.168.1.100:3000`)
 
+## ☁️ Déploiement sur Vercel
+
+### Prérequis pour le déploiement
+
+- Un compte [Vercel](https://vercel.com) (gratuit)
+- Un cluster MongoDB Atlas (gratuit disponible)
+- Le projet doit être poussé sur GitHub, GitLab ou Bitbucket
+
+### Étapes de déploiement
+
+1. **Préparer MongoDB Atlas**
+
+   - Créer un compte sur [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+   - Créer un cluster gratuit (M0)
+   - Créer un utilisateur de base de données avec un mot de passe
+   - Autoriser l'accès depuis n'importe quelle IP (0.0.0.0/0) dans "Network Access"
+   - Récupérer l'URI de connexion (format : `mongodb+srv://username:password@cluster.mongodb.net/cartes-assurance`)
+
+2. **Pousser le code sur Git**
+
+   ```bash
+   git add .
+   git commit -m "Préparation pour déploiement Vercel"
+   git push origin main
+   ```
+
+3. **Déployer sur Vercel**
+
+   **Option A : Via l'interface Vercel (recommandé)**
+   
+   - Aller sur [vercel.com](https://vercel.com)
+   - Cliquer sur "Add New Project"
+   - Importer votre repository Git
+   - Vercel détectera automatiquement la configuration
+
+   **Option B : Via la CLI Vercel**
+   
+   ```bash
+   npm i -g vercel
+   vercel login
+   vercel
+   ```
+
+4. **Configurer les variables d'environnement**
+
+   Dans le dashboard Vercel de votre projet :
+   
+   - Aller dans **Settings** → **Environment Variables**
+   - Ajouter les variables suivantes :
+     
+     | Variable | Valeur | Description |
+     |----------|--------|-------------|
+     | `MONGODB_URI` | `mongodb+srv://...` | URI de connexion MongoDB Atlas |
+     | `NODE_ENV` | `production` | Environnement de production |
+   
+   ⚠️ **Important** : Après avoir ajouté les variables, vous devez **redéployer** le projet pour qu'elles soient prises en compte.
+
+5. **Redéployer le projet**
+
+   - Dans le dashboard Vercel, aller dans **Deployments**
+   - Cliquer sur les trois points (⋯) du dernier déploiement
+   - Sélectionner **Redeploy**
+
+### Configuration Vercel
+
+Le projet inclut déjà un fichier `vercel.json` configuré pour :
+- ✅ Servir les fichiers statiques du frontend
+- ✅ Router les requêtes API vers le backend
+- ✅ Configurer les headers de sécurité
+- ✅ Gérer le Service Worker pour la PWA
+
+### Vérification après déploiement
+
+1. **Tester l'API**
+   ```
+   https://votre-projet.vercel.app/api/health
+   ```
+   Devrait retourner : `{"status":"OK","message":"API fonctionnelle"}`
+
+2. **Tester le frontend**
+   ```
+   https://votre-projet.vercel.app/
+   ```
+   L'application devrait se charger correctement
+
+3. **Tester la connexion MongoDB**
+   - Essayer d'enregistrer une carte via l'interface
+   - Vérifier les logs Vercel pour les erreurs éventuelles
+
+### Variables d'environnement requises sur Vercel
+
+| Variable | Obligatoire | Description |
+|----------|-------------|-------------|
+| `MONGODB_URI` | ✅ Oui | URI de connexion MongoDB Atlas |
+| `NODE_ENV` | ⚠️ Recommandé | `production` pour Vercel |
+| `PORT` | ❌ Non | Géré automatiquement par Vercel |
+
+### Dépannage du déploiement
+
+**Erreur : "MongoDB connection failed"**
+- Vérifier que `MONGODB_URI` est correctement configurée dans Vercel
+- Vérifier que l'IP 0.0.0.0/0 est autorisée dans MongoDB Atlas
+- Vérifier les credentials MongoDB
+
+**Erreur : "Cannot find module"**
+- Vérifier que toutes les dépendances sont dans `package.json`
+- Vérifier que `node_modules` n'est pas dans `.vercelignore`
+
+**Le frontend ne charge pas**
+- Vérifier que les fichiers sont dans le dossier `frontend/`
+- Vérifier les routes dans `vercel.json`
+
+**Le Service Worker ne fonctionne pas**
+- Vérifier que l'application est en HTTPS (automatique sur Vercel)
+- Vérifier les headers dans `vercel.json`
+
 ## 📱 Utilisation
 
 ### Scanner une carte
@@ -105,12 +222,14 @@ Les cartes enregistrées s'affichent automatiquement dans la section "Cartes enr
 
 ### Variables d'environnement
 
-Créer un fichier `.env` dans `backend/` (copier depuis `.env.example`) :
+**En local :** Créer un fichier `.env` dans `backend/` :
 
 ```env
 MONGODB_URI=mongodb://localhost:27017/cartes-assurance
 PORT=3000
 ```
+
+**Sur Vercel :** Configurer dans le dashboard (voir section Déploiement)
 
 ### Personnalisation de l'OCR
 
@@ -179,7 +298,7 @@ Vérifie l'état de l'API.
 ⚠️ **Ceci est un prototype** - Pour la production, ajouter :
 - Authentification (JWT, OAuth)
 - Validation stricte des données
-- HTTPS obligatoire
+- HTTPS obligatoire (automatique sur Vercel)
 - Chiffrement des données sensibles
 - Rate limiting
 - CORS configuré correctement
@@ -223,8 +342,8 @@ lsof -ti:3000 | xargs kill -9
 - Tester sur un autre navigateur
 
 ### Erreur de connexion MongoDB
-- Vérifier que MongoDB est démarré
-- Vérifier l'URI dans `.env`
+- Vérifier que MongoDB est démarré (en local)
+- Vérifier l'URI dans `.env` (en local) ou dans Vercel (en production)
 - Vérifier les credentials MongoDB Atlas
 
 ### OCR ne fonctionne pas
@@ -238,6 +357,7 @@ lsof -ti:3000 | xargs kill -9
 - Les résultats OCR peuvent nécessiter une correction manuelle
 - Pour améliorer l'extraction, adapter les patterns dans `extractInfoFromText()`
 - Les icônes PWA (icon-192.png, icon-512.png) doivent être ajoutées pour une installation complète
+- Sur Vercel, l'application est automatiquement en HTTPS, ce qui est requis pour la caméra et le Service Worker
 
 ## 📄 Licence
 
@@ -246,7 +366,3 @@ MIT
 ## 👨‍💻 Auteur
 
 Prototype développé pour démonstration des fonctionnalités PWA et OCR.
-
-=======
-# prototype_cursor
- c87a9638d64017f30b45c3e3653dd4156fe5f14f
