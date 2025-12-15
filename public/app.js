@@ -36,6 +36,7 @@ const previewImage = document.getElementById('preview-image');
 
 let stream = null;
 let capturedImage = null;
+let capturedImageBase64 = null;
 
 /**
  * Initialisation de l'application
@@ -111,8 +112,9 @@ function captureImage() {
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
 
-    // Convertir en image
-    capturedImage = canvas.toDataURL('image/jpeg');
+    // Convertir en image et compresser en Base64
+    capturedImage = canvas.toDataURL('image/jpeg', 0.6); // Qualité réduite à 60%
+    capturedImageBase64 = compressImage(capturedImage); // Compresser davantage si nécessaire
 
     // Afficher l'aperçu
     previewImage.src = capturedImage;
@@ -121,6 +123,28 @@ function captureImage() {
 
     // Arrêter la caméra
     stopCamera();
+}
+
+/**
+ * Compresser l'image Base64 si elle est trop grosse
+ */
+function compressImage(base64String) {
+    // Si l'image dépasse 500KB, la redimensionner via Canvas
+    if (base64String.length > 500000) {
+        const img = new Image();
+        img.onload = function() {
+            const resizeCanvas = document.createElement('canvas');
+            const maxWidth = 800;
+            const ratio = maxWidth / img.width;
+            resizeCanvas.width = maxWidth;
+            resizeCanvas.height = img.height * ratio;
+            const resizeContext = resizeCanvas.getContext('2d');
+            resizeContext.drawImage(img, 0, 0, resizeCanvas.width, resizeCanvas.height);
+            capturedImageBase64 = resizeCanvas.toDataURL('image/jpeg', 0.5);
+        };
+        img.src = base64String;
+    }
+    return base64String;
 }
 
 /**
@@ -240,7 +264,8 @@ async function saveCarte(event) {
         nom: document.getElementById('nom').value.trim(),
         prenom: document.getElementById('prenom').value.trim(),
         numeroAssurance: document.getElementById('numero-assurance').value.trim(),
-        assureur: document.getElementById('assureur').value.trim()
+        assureur: document.getElementById('assureur').value.trim(),
+        imageBase64: capturedImageBase64 || null
     };
 
     // Validation côté client
@@ -313,20 +338,34 @@ function createCarteCard(carte) {
         minute: '2-digit'
     });
 
+    let imageHtml = '';
+    if (carte._id) {
+        imageHtml = `
+            <div class="carte-item-image">
+                <img id="img-${carte._id}" src="data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Carte" class="carte-thumbnail">
+            </div>
+        `;
+        // Charger l'image de manière asynchrone
+        setTimeout(() => loadCarteImage(carte._id), 100);
+    }
+
     return `
         <div class="carte-item">
-            <div class="carte-item-header">
-                <div class="carte-item-name">${carte.prenom} ${carte.nom}</div>
-                <div class="carte-item-date">${dateStr}</div>
-            </div>
-            <div class="carte-item-details">
-                <div class="carte-item-detail">
-                    <strong>Numéro d'assurance</strong>
-                    ${carte.numeroAssurance}
+            ${imageHtml}
+            <div class="carte-item-content">
+                <div class="carte-item-header">
+                    <div class="carte-item-name">${carte.prenom} ${carte.nom}</div>
+                    <div class="carte-item-date">${dateStr}</div>
                 </div>
-                <div class="carte-item-detail">
-                    <strong>Assureur</strong>
-                    ${carte.assureur}
+                <div class="carte-item-details">
+                    <div class="carte-item-detail">
+                        <strong>Numéro d'assurance</strong>
+                        ${carte.numeroAssurance}
+                    </div>
+                    <div class="carte-item-detail">
+                        <strong>Assureur</strong>
+                        ${carte.assureur}
+                    </div>
                 </div>
             </div>
         </div>
@@ -334,10 +373,29 @@ function createCarteCard(carte) {
 }
 
 /**
+ * Charger l'image d'une carte depuis le serveur
+ */
+async function loadCarteImage(carteId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/cartes/${carteId}/image`);
+        if (response.ok) {
+            const data = await response.json();
+            const imgElement = document.getElementById(`img-${carteId}`);
+            if (imgElement && data.imageBase64) {
+                imgElement.src = data.imageBase64;
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement de l\'image:', error);
+    }
+}
+
+/**
  * Réinitialiser le scanner
  */
 function resetScanner() {
     capturedImage = null;
+    capturedImageBase64 = null;
     previewContainer.classList.add('hidden');
     ocrResult.classList.add('hidden');
     initialControls.classList.remove('hidden');

@@ -112,9 +112,9 @@ function captureImage() {
     canvas.height = video.videoHeight;
     context.drawImage(video, 0, 0);
 
-    // Convertir en image
-    capturedImage = canvas.toDataURL('image/jpeg');
-    capturedImageBase64 = capturedImage; // Stocker la version Base64
+    // Convertir en image et compresser en Base64
+    capturedImage = canvas.toDataURL('image/jpeg', 0.6); // Qualité réduite à 60%
+    capturedImageBase64 = compressImage(capturedImage); // Compresser davantage si nécessaire
 
     // Afficher l'aperçu
     previewImage.src = capturedImage;
@@ -123,6 +123,28 @@ function captureImage() {
 
     // Arrêter la caméra
     stopCamera();
+}
+
+/**
+ * Compresser l'image Base64 si elle est trop grosse
+ */
+function compressImage(base64String) {
+    // Si l'image dépasse 500KB, la redimensionner via Canvas
+    if (base64String.length > 500000) {
+        const img = new Image();
+        img.onload = function() {
+            const resizeCanvas = document.createElement('canvas');
+            const maxWidth = 800;
+            const ratio = maxWidth / img.width;
+            resizeCanvas.width = maxWidth;
+            resizeCanvas.height = img.height * ratio;
+            const resizeContext = resizeCanvas.getContext('2d');
+            resizeContext.drawImage(img, 0, 0, resizeCanvas.width, resizeCanvas.height);
+            capturedImageBase64 = resizeCanvas.toDataURL('image/jpeg', 0.5);
+        };
+        img.src = base64String;
+    }
+    return base64String;
 }
 
 /**
