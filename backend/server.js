@@ -10,7 +10,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+
+// Configuration dotenv - adapter le chemin selon l'environnement
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -137,26 +141,31 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API fonctionnelle' });
 });
 
-// Démarrage du serveur
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📱 Frontend accessible sur http://localhost:${PORT}`);
-  console.log(`🔌 API disponible sur http://localhost:${PORT}/api`);
-});
+// Export pour Vercel (serverless)
+module.exports = app;
 
-// Gestion des erreurs de port
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.error(`❌ Erreur: Le port ${PORT} est déjà utilisé`);
-    console.log(`💡 Solutions:`);
-    console.log(`   1. Arrêter le processus qui utilise le port ${PORT}`);
-    console.log(`   2. Utiliser un autre port en définissant PORT dans .env (ex: PORT=3001)`);
-    console.log(`   3. Sur Windows: netstat -ano | findstr :${PORT} puis taskkill /PID <PID> /F`);
-    console.log(`   4. Sur Linux/Mac: lsof -ti:${PORT} | xargs kill -9`);
-    process.exit(1);
-  } else {
-    console.error('❌ Erreur serveur:', error);
-    process.exit(1);
-  }
-});
+// Démarrage du serveur uniquement en local (pas sur Vercel)
+if (require.main === module && !process.env.VERCEL) {
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+    console.log(`📱 Frontend accessible sur http://localhost:${PORT}`);
+    console.log(`🔌 API disponible sur http://localhost:${PORT}/api`);
+  });
+
+  // Gestion des erreurs de port
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`❌ Erreur: Le port ${PORT} est déjà utilisé`);
+      console.log(`💡 Solutions:`);
+      console.log(`   1. Arrêter le processus qui utilise le port ${PORT}`);
+      console.log(`   2. Utiliser un autre port en définissant PORT dans .env (ex: PORT=3001)`);
+      console.log(`   3. Sur Windows: netstat -ano | findstr :${PORT} puis taskkill /PID <PID> /F`);
+      console.log(`   4. Sur Linux/Mac: lsof -ti:${PORT} | xargs kill -9`);
+      process.exit(1);
+    } else {
+      console.error('❌ Erreur serveur:', error);
+      process.exit(1);
+    }
+  });
+}
 
