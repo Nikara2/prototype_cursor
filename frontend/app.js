@@ -240,7 +240,9 @@ async function saveCarte(event) {
         nom: document.getElementById('nom').value.trim(),
         prenom: document.getElementById('prenom').value.trim(),
         numeroAssurance: document.getElementById('numero-assurance').value.trim(),
-        assureur: document.getElementById('assureur').value.trim()
+        assureur: document.getElementById('assureur').value.trim(),
+        // Inclure l'image capturée sous forme de Data URL (base64)
+        imageData: capturedImage || null
     };
 
     // Validation côté client
@@ -329,6 +331,10 @@ function createCarteCard(carte) {
                     ${carte.assureur}
                 </div>
             </div>
+            ${carte.imageData ? `
+            <div class="carte-item-image" style="margin-top:10px;">
+                <img src="${carte.imageData}" alt="Scan de la carte" style="max-width:100%; height:auto; border:1px solid #e0e0e0; border-radius:8px;" />
+            </div>` : ''}
         </div>
     `;
 }

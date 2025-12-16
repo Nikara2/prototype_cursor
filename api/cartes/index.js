@@ -6,7 +6,8 @@ const CarteSchema = new mongoose.Schema({
   prenom: { type: String, required: true, trim: true },
   numeroAssurance: { type: String, required: true, trim: true },
   assureur: { type: String, required: true, trim: true },
-  dateEnregistrement: { type: Date, default: Date.now }
+  dateEnregistrement: { type: Date, default: Date.now },
+  imageData: { type: String, required: false }
 });
 
 const Carte = mongoose.models.Carte || mongoose.model('Carte', CarteSchema);
@@ -36,14 +37,14 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'POST') {
-      const { nom, prenom, numeroAssurance, assureur } = req.body || {};
+      const { nom, prenom, numeroAssurance, assureur, imageData } = req.body || {};
 
       if (!nom || !prenom || !numeroAssurance || !assureur) {
         console.warn('⚠️  Missing required fields:', { nom, prenom, numeroAssurance, assureur });
         return res.status(400).json({ error: 'Tous les champs sont requis (nom, prenom, numeroAssurance, assureur)' });
       }
 
-      const nouvelleCarte = await Carte.create({ nom, prenom, numeroAssurance, assureur });
+      const nouvelleCarte = await Carte.create({ nom, prenom, numeroAssurance, assureur, imageData });
       console.log('✅ Carte saved:', nouvelleCarte._id);
       return res.status(201).json({ message: 'Carte enregistrée avec succès', carte: nouvelleCarte });
     }

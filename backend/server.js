@@ -21,7 +21,8 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors()); // Permet les requêtes cross-origin depuis le frontend
-app.use(express.json()); // Parse les requêtes JSON
+// Augmenter la limite pour accepter des images encodées en base64
+app.use(express.json({ limit: '10mb' })); // Parse les requêtes JSON (payload jusqu'à 10 Mo)
 
 // Servir les fichiers statiques du frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
@@ -66,6 +67,11 @@ const carteSchema = new mongoose.Schema({
   dateEnregistrement: {
     type: Date,
     default: Date.now
+  },
+  // Image encodée en Data URL (base64) envoyée par le frontend (optionnel)
+  imageData: {
+    type: String,
+    required: false
   }
 });
 
@@ -88,7 +94,7 @@ const Carte = mongoose.model('Carte', carteSchema);
 app.post('/api/cartes', async (req, res) => {
   try {
     // Validation basique des données
-    const { nom, prenom, numeroAssurance, assureur } = req.body;
+    const { nom, prenom, numeroAssurance, assureur, imageData } = req.body;
 
     if (!nom || !prenom || !numeroAssurance || !assureur) {
       return res.status(400).json({
@@ -101,7 +107,8 @@ app.post('/api/cartes', async (req, res) => {
       nom,
       prenom,
       numeroAssurance,
-      assureur
+      assureur,
+      imageData: imageData || undefined
     });
 
     const carteEnregistree = await nouvelleCarte.save();
