@@ -368,10 +368,6 @@ function createCarteCard(carte) {
                     </div>
                 </div>
             </div>
-            ${carte.imageData ? `
-            <div class="carte-item-image" style="margin-top:10px;">
-                <img src="${carte.imageData}" alt="Scan de la carte" style="max-width:100%; height:auto; border:1px solid #e0e0e0; border-radius:8px;" />
-            </div>` : ''}
         </div>
     `;
 }
